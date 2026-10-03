@@ -16,3 +16,4 @@ dist/
 
 # Local secrets
 .env
+.env*.local

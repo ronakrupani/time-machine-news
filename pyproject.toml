@@ -15,15 +15,20 @@ dependencies = [
     "mcp[cli]",
     "httpx",
     "upstash-redis",
+    "starlette",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "uvicorn",
 ]
 
 [project.scripts]
 time-machine-news = "time_machine_news.server:main"
+
+[tool.vercel]
+entrypoint = "src.time_machine_news.app:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/time_machine_news"]

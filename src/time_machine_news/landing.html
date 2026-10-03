@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Machine News</title>
+<meta name="description" content="Connect Claude to millions of digitized US newspaper pages from the Library of Congress, 1700s to 1963.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2322323a'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23e8b64c' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23e8b64c'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --board: #cfd2c4;
+    --board-deep: #b6baa9;
+    --ink: #1e2320;
+    --ink-soft: #464e45;
+    --screen: #22323a;
+    --screen-edge: #141e22;
+    --screen-text: #c9d4cf;
+    --lamp: #e8b64c;
+    --lamp-ink: #1e2320;
+    --stamp: #234479;
+    --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --sans: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --board: #171c1a;
+      --board-deep: #2b322e;
+      --ink: #e1e5da;
+      --ink-soft: #a9b1a4;
+      --screen: #25343b;
+      --screen-edge: #34464e;
+      --stamp: #a3bde9;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--board);
+    color: var(--ink);
+    font: 400 1.0625rem/1.6 var(--sans);
+  }
+  a { color: var(--stamp); text-underline-offset: 0.18em; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 3px solid var(--lamp); outline-offset: 3px; border-radius: 2px; }
+
+  .wrap { max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; }
+
+  header.site {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 1.5rem; padding-bottom: 1.5rem;
+  }
+  .wordmark { font: italic 400 1.35rem/1 var(--serif); color: var(--ink); text-decoration: none; }
+  header.site nav a { font-size: 0.95rem; }
+
+  /* Hero: words on the left, the microfilm reader on the right. */
+  .hero {
+    display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(2rem, 5vw, 4.5rem); align-items: center;
+    padding-top: clamp(1rem, 4vw, 3rem); padding-bottom: clamp(3rem, 7vw, 5.5rem);
+  }
+  h1 {
+    font: 500 clamp(2.6rem, 5.4vw, 4.4rem)/1.02 var(--serif);
+    font-variation-settings: "opsz" 72;
+    letter-spacing: -0.015em;
+    margin: 0 0 1.4rem;
+    max-width: 14ch;
+  }
+  .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 36rem; margin: 0 0 2.2rem; }
+
+  .connector label { display: block; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .copy-row {
+    display: flex; max-width: 36rem;
+    border: 2px solid var(--ink); border-radius: 6px; overflow: hidden;
+    background: color-mix(in srgb, var(--board) 70%, white);
+  }
+  @media (prefers-color-scheme: dark) {
+    .copy-row { background: color-mix(in srgb, var(--board) 85%, white); }
+  }
+  .copy-row input {
+    flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink);
+    font: 500 0.98rem/1 var(--mono); padding: 0.95rem 1rem;
+  }
+  .copy-row input:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--lamp); }
+  .copy-row button {
+    flex: none; border: 0; border-left: 2px solid var(--ink); cursor: pointer;
+    background: var(--lamp); color: var(--lamp-ink);
+    font: 600 1rem/1 var(--sans); padding: 0 1.4rem; min-width: 8.5rem;
+  }
+  .copy-row button:hover { background: color-mix(in srgb, var(--lamp) 85%, white); }
+  .copy-row button:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--ink); }
+  .fine { font-size: 0.92rem; color: var(--ink-soft); margin: 0.75rem 0 0; }
+
+  /* The reader. */
+  .reader {
+    margin: 0;
+    background: var(--screen);
+    border: 1px solid var(--screen-edge);
+    border-radius: 14px;
+    padding: 14px 14px 0;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 24px 48px -28px rgba(10, 20, 22, 0.55);
+  }
+  .glass {
+    position: relative; overflow: hidden; border-radius: 6px;
+    aspect-ratio: 4 / 4.6; background: #dfe3dc;
+  }
+  .glass img {
+    display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%;
+    filter: grayscale(1) contrast(1.12) brightness(1.04);
+    transform: scale(1.035);
+    animation: focus 1.6s cubic-bezier(.2,.7,.2,1) 0.25s both;
+  }
+  .glass::after {
+    /* Lamp falloff toward the edges of the screen. */
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(16, 28, 30, 0.42) 100%);
+  }
+  @keyframes focus {
+    from { filter: grayscale(1) contrast(1.12) brightness(1.04) blur(7px); transform: scale(1.09); }
+    to   { filter: grayscale(1) contrast(1.12) brightness(1.04) blur(0); transform: scale(1.035); }
+  }
+  .reader figcaption {
+    color: var(--screen-text); font-size: 0.9rem; line-height: 1.45;
+    padding: 0.85rem 0.25rem 1rem;
+    display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  }
+  .reader figcaption a { color: var(--lamp); }
+
+  /* Body sections. */
+  main section { border-top: 1px solid var(--board-deep); padding: clamp(2.5rem, 6vw, 4rem) 0; }
+  .split { display: grid; grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); gap: 2rem 4rem; }
+  h2 { font: 500 clamp(1.6rem, 2.6vw, 2.1rem)/1.15 var(--serif); margin: 0; letter-spacing: -0.01em; }
+  .aside { color: var(--ink-soft); font-size: 0.98rem; margin: 0.8rem 0 0; }
+
+  ol.steps { list-style: none; counter-reset: step; margin: 0; padding: 0; max-width: 40rem; }
+  ol.steps li {
+    counter-increment: step; position: relative;
+    padding: 0 0 1.4rem 3.2rem;
+  }
+  ol.steps li::before {
+    content: counter(step); position: absolute; left: 0; top: -0.1rem;
+    width: 2.1rem; height: 2.1rem; border-radius: 50%;
+    border: 2px solid var(--ink); display: grid; place-items: center;
+    font: 500 1.1rem/1 var(--serif);
+  }
+  ol.steps li:last-child { padding-bottom: 0; }
+  ol.steps strong { font-weight: 600; }
+
+  ul.asks { list-style: none; margin: 0; padding: 0; max-width: 44rem; }
+  ul.asks li {
+    font: 400 1.3rem/1.4 var(--serif); padding: 0.85rem 0;
+    border-bottom: 1px solid var(--board-deep);
+  }
+  ul.asks li:first-child { padding-top: 0; }
+  ul.asks li:last-child { border-bottom: 0; }
+
+  dl.tools { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.8rem 3rem; max-width: 46rem; }
+  dl.tools dt { font-weight: 600; margin-bottom: 0.3rem; }
+  dl.tools dd { margin: 0; color: var(--ink-soft); }
+
+  ul.notes { margin: 0; padding-left: 1.2rem; max-width: 42rem; color: var(--ink-soft); }
+  ul.notes li { margin-bottom: 0.6rem; }
+
+  footer.site {
+    border-top: 1px solid var(--board-deep);
+    padding-top: 2rem; padding-bottom: 3rem;
+    font-size: 0.92rem; color: var(--ink-soft);
+  }
+  footer.site p { margin: 0 0 0.4rem; max-width: 46rem; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+    .reader { max-width: 30rem; }
+    .split { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 1rem; }
+    .copy-row { flex-direction: column; }
+    .copy-row button { border-left: 0; border-top: 2px solid var(--ink); padding: 0.9rem; }
+    dl.tools { grid-template-columns: 1fr; }
+    ul.asks li { font-size: 1.15rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .glass img { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <header class="site wrap">
+    <a class="wordmark" href="/">Time Machine News</a>
+    <nav><a href="https://github.com/ronakrupani/time-machine-news">Source on GitHub</a></nav>
+  </header>
+
+  <main>
+    <div class="hero wrap">
+      <div>
+        <h1>Read America’s old newspapers with Claude</h1>
+        <p class="lede">
+          Time Machine News connects Claude to Chronicling America, the Library of Congress archive of
+          more than 20 million digitized newspaper pages from the 1700s to 1963. Ask about a day, a town,
+          or an event, and Claude reads the pages printed at the time.
+        </p>
+        <div class="connector">
+          <label for="connector-url">Connector link</label>
+          <div class="copy-row">
+            <input id="connector-url" type="text" value="{{CONNECTOR_URL}}" readonly spellcheck="false">
+            <button type="button" id="copy-button">Copy link</button>
+          </div>
+          <p class="fine" id="copy-status" aria-live="polite">Free to use. No account or API key needed.</p>
+        </div>
+      </div>
+
+      <figure class="reader">
+        <div class="glass">
+          <img
+            src="https://tile.loc.gov/image-services/iiif/service:ndnp:dlc:batch_dlc_keady_ver01:data:sn83030214:00206531526:1912041601:0303/full/900,/0/default.jpg"
+            alt="Front page of the New-York Tribune, April 16, 1912, reporting the sinking of the Titanic"
+            width="900" height="1350">
+        </div>
+        <figcaption>
+          <span>New-York Tribune, April 16, 1912, page 1</span>
+          <a href="https://www.loc.gov/resource/sn83030214/1912-04-16/ed-1/?sp=1">See the scan</a>
+        </figcaption>
+      </figure>
+    </div>
+
+    <section>
+      <div class="wrap split">
+        <div>
+          <h2>Add it to Claude</h2>
+          <p class="aside">Works on claude.ai, Claude Desktop, and the mobile apps once it’s added. On Team and Enterprise plans, an owner may need to add it for your organization first.</p>
+        </div>
+        <ol class="steps">
+          <li>Copy the connector link above.</li>
+          <li>In Claude, open <strong>Settings</strong>, then <strong>Connectors</strong>.</li>
+          <li>Choose <strong>Add custom connector</strong>, name it Time Machine News, paste the link, and select <strong>Add</strong>.</li>
+          <li>In a chat, open the tools menu below the message box and turn on Time Machine News.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div>
+          <h2>Things to ask</h2>
+          <p class="aside">Claude searches the archive, opens the pages, and quotes what was printed, with links back to each scan.</p>
+        </div>
+        <ul class="asks">
+          <li>What did Kansas newspapers report the week the Titanic sank?</li>
+          <li>Summarize the front pages from November 11, 1918.</li>
+          <li>How did Chicago papers cover the flu in October 1918?</li>
+          <li>Read me the front page of the New-York Tribune from April 16, 1912.</li>
+          <li>Which Montana newspapers are in the archive?</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div>
+          <h2>What Claude can do with it</h2>
+        </div>
+        <dl class="tools">
+          <div>
+            <dt>Search page text</dt>
+            <dd>Finds words or phrases on scanned pages, filtered by date, state, or newspaper.</dd>
+          </div>
+          <div>
+            <dt>See a day’s front pages</dt>
+            <dd>Lists the front pages printed on any date, with their top headlines.</dd>
+          </div>
+          <div>
+            <dt>Read a full page</dt>
+            <dd>Pulls the transcribed text of a page, a citation, and links to the scan and PDF.</dd>
+          </div>
+          <div>
+            <dt>Find newspapers</dt>
+            <dd>Looks up papers by name, state, or city, with their years in print.</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div>
+          <h2>Good to know</h2>
+        </div>
+        <ul class="notes">
+          <li>Page text was machine-read from old microfilm, so expect typos and garbled words. Check the scan before quoting.</li>
+          <li>The archive ends in 1963, and most pages are from 1836 to 1922.</li>
+          <li>A new search can take up to a minute; repeat searches are instant. The Library of Congress allows only a few lookups per minute, shared by everyone using this connector, so if Claude says it’s busy, wait a minute and ask again.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site wrap">
+    <p>Newspaper scans and text come from <a href="https://www.loc.gov/collections/chronicling-america/">Chronicling America</a> at the Library of Congress. This project isn’t affiliated with the Library.</p>
+    <p>Built by Ronak Rupani. <a href="https://github.com/ronakrupani/time-machine-news">Source on GitHub</a>.</p>
+  </footer>
+
+  <script>
+    (function () {
+      var input = document.getElementById("connector-url");
+      var button = document.getElementById("copy-button");
+      var status = document.getElementById("copy-status");
+      var original = status.textContent;
+      var timer;
+
+      function done(ok) {
+        button.textContent = ok ? "Copied" : "Copy link";
+        status.textContent = ok
+          ? "Copied. Paste it into Claude under Settings, then Connectors."
+          : "Couldn’t copy automatically. Select the link and copy it.";
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          button.textContent = "Copy link";
+          status.textContent = original;
+        }, 4000);
+      }
+
+      button.addEventListener("click", function () {
+        var text = input.value;
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+        } else {
+          fallback();
+        }
+        function fallback() {
+          input.select();
+          var ok = false;
+          try { ok = document.execCommand("copy"); } catch (e) {}
+          done(ok);
+        }
+      });
+      input.addEventListener("focus", function () { input.select(); });
+    })();
+  </script>
+</body>
+</html>
