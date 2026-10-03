@@ -13,6 +13,9 @@ dist/
 # Environment variables / secrets
 .env
 
+# Vercel
+.vercel/
+
 # Testing
 .pytest_cache/
 

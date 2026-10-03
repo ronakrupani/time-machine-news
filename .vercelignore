@@ -1,0 +1,18 @@
+# Tests
+tests/
+
+# Virtual environments
+.venv/
+
+# Caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Local secrets
+.env
