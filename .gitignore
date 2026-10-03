@@ -1,36 +1,20 @@
 # Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
-*$py.class
-
-# C extensions
-*.so
 
 # Distribution / packaging
 build/
 dist/
 *.egg-info/
-.eggs/
-wheels/
 
 # Virtual environments
 .venv/
-venv/
-env/
 
 # Environment variables / secrets
 .env
 
-# Spotify OAuth token cache
-.spotify_mcp_token
-.cache
-
-# Testing / coverage
+# Testing
 .pytest_cache/
-.coverage
-htmlcov/
-.mypy_cache/
-.ruff_cache/
 
 # Editors / OS
 .vscode/
